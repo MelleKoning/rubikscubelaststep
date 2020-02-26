@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Repositiop corners")
+	fmt.Println("Rubiks Cube - Reposition last four corners")
 
 	for maxturns := 0; maxturns < 3; maxturns++ {
 		fmt.Println("Maxturns depth", maxturns+1)
@@ -22,7 +22,9 @@ func main() {
 			// we're done :)
 			fmt.Println("Yes! We slayed the monster!")
 			beast.PrintMoves(maxturns)
-			break // break out of the loop
+			fmt.Println("....")
+			// no break as there might be multiple solutions
+			// break // break out of the loop
 		}
 	}
 }
@@ -57,6 +59,14 @@ var Move_name = map[TryMove]string{
 	LEFTSTART_SWAP:  "LEFTSTART_SWAP",
 	RIGHT_TO_FRONT:  "RIGHT_TO_FRONT",
 	RIGHTSTART_SWAP: "RIGHTSTART_SWAP",
+}
+
+var CornerFaceName = map[CornerFace]string{
+	FACE_TOP:   "TOP",
+	FACE_FRONT: "FRONT",
+	FACE_RIGHT: "RIGHT",
+	FACE_BACK:  "BACK",
+	FACE_LEFT:  "LEFT",
 }
 
 // Corner represents how the cornercube looks
@@ -154,6 +164,10 @@ func slayTopLayer(t TopLayer, turns int, maxturns int) TopLayer {
 		beast.ExecuteMove(idx, turns)
 		result := slayTopLayer(beast, turns+1, maxturns)
 		if result.Solved() {
+			// cube solved at this depth,
+			// we should actually add this result
+			// to some resultlist, so that we can
+			// also check other possible solutions at the same depth
 			return result
 		}
 	}
@@ -203,18 +217,18 @@ func (t *TopLayer) ExecuteMove(move TryMove, turn int) {
 	case RIGHT_TO_FRONT:
 		{
 			frcube := t.corners[CUBE_FR] // backup copy
-			t.corners[CUBE_FR].top = t.corners[CUBE_BR].top
-			t.corners[CUBE_FR].front = t.corners[CUBE_BR].right
-			t.corners[CUBE_FR].right = t.corners[CUBE_BR].back
-			t.corners[CUBE_BR].top = t.corners[CUBE_BL].top
-			t.corners[CUBE_BR].back = t.corners[CUBE_BL].left
-			t.corners[CUBE_BR].right = t.corners[CUBE_BL].back
-			t.corners[CUBE_BL].top = t.corners[CUBE_FL].top
-			t.corners[CUBE_BL].back = t.corners[CUBE_FL].left
-			t.corners[CUBE_BL].left = t.corners[CUBE_FL].front
-			t.corners[CUBE_FL].top = frcube.top
-			t.corners[CUBE_FL].front = frcube.right
-			t.corners[CUBE_FL].left = frcube.front
+			t.corners[CUBE_FR].top = MoveRightRename(t.corners[CUBE_BR].top)
+			t.corners[CUBE_FR].front = MoveRightRename(t.corners[CUBE_BR].right)
+			t.corners[CUBE_FR].right = MoveRightRename(t.corners[CUBE_BR].back)
+			t.corners[CUBE_BR].top = MoveRightRename(t.corners[CUBE_BL].top)
+			t.corners[CUBE_BR].back = MoveRightRename(t.corners[CUBE_BL].left)
+			t.corners[CUBE_BR].right = MoveRightRename(t.corners[CUBE_BL].back)
+			t.corners[CUBE_BL].top = MoveRightRename(t.corners[CUBE_FL].top)
+			t.corners[CUBE_BL].back = MoveRightRename(t.corners[CUBE_FL].left)
+			t.corners[CUBE_BL].left = MoveRightRename(t.corners[CUBE_FL].front)
+			t.corners[CUBE_FL].top = MoveRightRename(frcube.top)
+			t.corners[CUBE_FL].front = MoveRightRename(frcube.right)
+			t.corners[CUBE_FL].left = MoveRightRename(frcube.front)
 			t.trackmoves[turn] = RIGHT_TO_FRONT
 		}
 	case LEFT_TO_FRONT:
@@ -223,53 +237,22 @@ func (t *TopLayer) ExecuteMove(move TryMove, turn int) {
 			// faces, also the designations of the faces
 			// have to be turned counter clockwise
 			flcube := t.corners[CUBE_FL] // backup copy
-			t.corners[CUBE_FL].top = t.corners[CUBE_BL].top
-			t.corners[CUBE_FL].front = t.corners[CUBE_BL].left
-			t.corners[CUBE_FL].left = t.corners[CUBE_BL].back
-			t.corners[CUBE_BL].top = t.corners[CUBE_BR].top
-			t.corners[CUBE_BL].back = t.corners[CUBE_BR].right
-			t.corners[CUBE_BL].left = t.corners[CUBE_BR].back
-			t.corners[CUBE_BR].top = t.corners[CUBE_FR].top
-			t.corners[CUBE_BR].back = t.corners[CUBE_FR].right
-			t.corners[CUBE_BR].right = t.corners[CUBE_FR].front
-			t.corners[CUBE_FR].top = flcube.top
-			t.corners[CUBE_FR].front = flcube.left
-			t.corners[CUBE_FR].right = flcube.front
+			t.corners[CUBE_FL].top = MoveLeftRename(t.corners[CUBE_BL].top)
+			t.corners[CUBE_FL].front = MoveLeftRename(t.corners[CUBE_BL].left)
+			t.corners[CUBE_FL].left = MoveLeftRename(t.corners[CUBE_BL].back)
+			t.corners[CUBE_BL].top = MoveLeftRename(t.corners[CUBE_BR].top)
+			t.corners[CUBE_BL].back = MoveLeftRename(t.corners[CUBE_BR].right)
+			t.corners[CUBE_BL].left = MoveLeftRename(t.corners[CUBE_BR].back)
+			t.corners[CUBE_BR].top = MoveLeftRename(t.corners[CUBE_FR].top)
+			t.corners[CUBE_BR].back = MoveLeftRename(t.corners[CUBE_FR].right)
+			t.corners[CUBE_BR].right = MoveLeftRename(t.corners[CUBE_FR].front)
+			t.corners[CUBE_FR].top = MoveLeftRename(flcube.top)
+			t.corners[CUBE_FR].front = MoveLeftRename(flcube.left)
+			t.corners[CUBE_FR].right = MoveLeftRename(flcube.front)
 			t.trackmoves[turn] = LEFT_TO_FRONT
-			for side := CUBE_FR; side <= CUBE_BR; side++ {
-				MoveLeft(side, t.corners[side])
-			}
-		}
-	}
-}
 
-// MoveLeft supports the designations of faces
-// when turning the cubes facing where leftside
-// comes to the front...
-func MoveLeft(side int, c Corner) Corner {
-	switch side {
-	case CUBE_FR:
-		{
-			c.right = MoveLeftRename(c.right)
-			c.front = MoveLeftRename(c.front)
-		}
-	case CUBE_FL:
-		{
-			c.front = MoveLeftRename(c.front)
-			c.left = MoveLeftRename(c.left)
-		}
-	case CUBE_BL:
-		{
-			c.left = MoveLeftRename(c.left)
-			c.back = MoveLeftRename(c.back)
-		}
-	case CUBE_BR:
-		{
-			c.back = MoveLeftRename(c.back)
-			c.right = MoveLeftRename(c.right)
 		}
 	}
-	return c
 }
 
 // MoveLeftRename where
@@ -286,10 +269,26 @@ func MoveLeftRename(cf CornerFace) CornerFace {
 		return FACE_BACK
 	}
 	return cf // no translation for top needed
-
 }
-func (m *TopLayer) showMonster() {
-	fmt.Printf("%+v", m)
+
+// MoveRightRename where
+// front becomes left, right becomes front, back becomes right, left becomes back
+func MoveRightRename(cf CornerFace) CornerFace {
+	switch cf {
+	case FACE_FRONT:
+		return FACE_LEFT
+	case FACE_LEFT:
+		return FACE_BACK
+	case FACE_BACK:
+		return FACE_RIGHT
+	case FACE_RIGHT:
+		return FACE_FRONT
+	}
+	return cf // no translation for top needed
+}
+
+func (t *TopLayer) showMonster() {
+	fmt.Printf("%+v", t)
 }
 
 // Solved tells if all the cubes are properly positioned
