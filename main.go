@@ -6,12 +6,13 @@ import (
 )
 
 func main() {
-	fmt.Println("Rubiks Cube - Reposition last four corners")
+	fmt.Println("Rubiks Cube - Reposition last two corners")
 
-	for maxturns := 0; maxturns < 3; maxturns++ {
+	for maxturns := 0; maxturns < 6; maxturns++ {
 		fmt.Println("Maxturns depth", maxturns+1)
 		beast := NewTopLayer()
-		beast.InitializeTopLayerCustom()
+		//beast.InitializeTopLayerRightStartSwap()
+		beast.InitializeTopLayerTwoCubesMisOriented()
 		if beast.Solved() {
 			beast.showMonster()
 			break
@@ -95,6 +96,7 @@ func NewTopLayer() *TopLayer {
 }
 
 // InitializeTopLayerDefault to initialize top layer
+// as if the cube is in a solved state
 func (t *TopLayer) InitializeTopLayerDefault() {
 	t.corners = make([]Corner, 4, 4)
 
@@ -120,9 +122,9 @@ func (t *TopLayer) InitializeTopLayerDefault() {
 
 }
 
-// InitializeTopLayerCustom is to initialize for a garbled
+// InitializeTopLayerRightStartSwap is to initialize for a garbled
 // up cube of top corner that is not default to correct....
-func (t *TopLayer) InitializeTopLayerCustom() {
+func (t *TopLayer) InitializeTopLayerRightStartSwap() {
 	t.corners = make([]Corner, 4, 4)
 
 	// FrontRight cube
@@ -144,6 +146,33 @@ func (t *TopLayer) InitializeTopLayerCustom() {
 	t.corners[CUBE_BR].back = FACE_TOP
 	t.corners[CUBE_BR].right = FACE_RIGHT
 	t.corners[CUBE_BR].top = FACE_FRONT
+
+}
+
+// InitializeTopLayerTwoCubesMisOriented to initialize top layer
+// as if two cubies have their corners mis-oriented
+func (t *TopLayer) InitializeTopLayerTwoCubesMisOriented() {
+	t.corners = make([]Corner, 4, 4)
+
+	// FrontRight cube - is misaligned as per example image
+	t.corners[CUBE_FR].front = FACE_RIGHT
+	t.corners[CUBE_FR].right = FACE_TOP
+	t.corners[CUBE_FR].top = FACE_FRONT
+
+	// FrontLeft cube
+	t.corners[CUBE_FL].front = FACE_FRONT
+	t.corners[CUBE_FL].left = FACE_LEFT
+	t.corners[CUBE_FL].top = FACE_TOP
+
+	// BackLeft cube
+	t.corners[CUBE_BL].back = FACE_BACK
+	t.corners[CUBE_BL].left = FACE_LEFT
+	t.corners[CUBE_BL].top = FACE_TOP
+
+	// BackRight cube - is misaligned as per example image
+	t.corners[CUBE_BR].back = FACE_RIGHT
+	t.corners[CUBE_BR].right = FACE_TOP
+	t.corners[CUBE_BR].top = FACE_BACK
 
 }
 
